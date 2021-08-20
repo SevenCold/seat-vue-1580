@@ -107,7 +107,7 @@
 <script>
   import AddOrUpdate from '../components/rules-add-or-update'
   import axios from "axios"
-  import {operators, types, props} from '@/common/config'
+  import {rule_operators, rule_types, rule_props} from '@/common/config'
   export default {
     data () {
       return {
@@ -135,9 +135,9 @@
       AddOrUpdate
     },
     mounted() {
-      this.types = this.getObjFromList(types)
-      this.props = this.getObjFromList(props)
-      this.operators = this.getObjFromList(operators)
+      this.types = this.getObjFromList(rule_types)
+      this.props = this.getObjFromList(rule_props)
+      this.operators = this.getObjFromList(rule_operators)
     },
     activated () {
       this.getDataList()

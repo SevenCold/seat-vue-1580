@@ -2,7 +2,7 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="规则名称" disabled clearable></el-input>
+        <el-input v-model="dataForm.key" placeholder="条件名称" disabled clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -114,7 +114,7 @@
         width="180"
         label="操作">
         <template  #default="scope">
-          <el-button type="text" size="small" @click="addChildRule(scope.row.id)">添加子规则</el-button>
+          <el-button type="text" size="small" @click="addChildRule(scope.row.id)">添加子条件</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button v-if="scope.row.children.length === 0" type="text" size="small" @click="deleteHandle(scope.row, scope.row.id)">删除</el-button>
         </template>
@@ -126,7 +126,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from '../components/rules-add-or-update'
+  import AddOrUpdate from '../components/condition-add-or-update'
   import axios from "axios"
   import {operators, types, props} from '@/common/config'
   export default {
@@ -225,7 +225,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.post(`/ruleTree/delete/${id}`).then(data => {
+          axios.post(`/condition/delete/${id}`).then(data => {
             if (data && data.status === 200) {
               this.getDataList()
               this.$message({
