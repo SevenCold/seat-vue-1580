@@ -1,23 +1,23 @@
 <template>
   <div class="mod-config">
-    <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
+    <el-form :inline="true" :model="dataForm">
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="鞍座名称" clearable></el-input>
+        <el-input v-model="dataForm.key" placeholder="钢卷卷号" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-select v-model="dataForm.list" multiple collapse-tags placeholder="请选择">
           <el-option
-              v-for="item in types"
+              v-for="item in plans"
               :key="item.value"
-              :label="item.label"
+              :label="item.name"
               :value="item.value">
-            <span style="float: left">{{ item.label }}</span>
+            <span style="float: left">{{ item.name }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button @click="getDataList()">查询</el-button>
+        <el-button type="primary" @click="getDataList()">查询</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -27,35 +27,29 @@
         @selection-change="selectionChangeHandle" :height="tableHeight"
         style="width: 100%;">
       <el-table-column
-          prop="coilId"
+          prop="coilId" width="140"
           header-align="center"
           align="center"
           label="钢卷卷号">
       </el-table-column>
       <el-table-column
-          prop="deviceNameOrg"
-          header-align="center"
-          align="center"
-          label="鞍座名称">
-      </el-table-column>
-      <el-table-column
-          prop="type"
+          prop="taskType" width="130"
           header-align="center"
           align="center"
           :formatter="typeFormatter"
           label="任务类型">
       </el-table-column>
       <el-table-column
-          prop="deviceNameDes"
+          prop="deviceNameOrg" width="130"
           header-align="center"
           align="center"
-          label="目标垛位">
+          label="起始位置">
       </el-table-column>
       <el-table-column
-          prop="crossName"
+          prop="deviceNameDes" width="130"
           header-align="center"
           align="center"
-          label="跨名称">
+          label="目标位置">
       </el-table-column>
       <el-table-column
           prop="carNo"
@@ -69,30 +63,12 @@
           align="center"
           label="停车位">
       </el-table-column>
-      <el-table-column
-          prop="sequence"
-          header-align="center"
-          align="center"
-          label="序列号">
-      </el-table-column>
-      <el-table-column
-          prop="planId"
-          header-align="center"
-          align="center"
-          label="计划号">
-      </el-table-column>
-      <el-table-column
-          prop="taskType"
-          header-align="center"
-          align="center"
-          label="任务类型">
-      </el-table-column>
-      <el-table-column
-          prop="orderType"
-          header-align="center"
-          align="center"
-          label="指令类型">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--          prop="orderType"-->
+<!--          header-align="center"-->
+<!--          align="center"-->
+<!--          label="指令类型">-->
+<!--      </el-table-column>-->
       <el-table-column
           prop="priority"
           header-align="center"
@@ -171,12 +147,12 @@
           align="center"
           label="钢卷Y">
       </el-table-column>
-      <el-table-column
-          prop="createTime"
-          header-align="center"
-          align="center"
-          label="创建时间">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--          prop="createTime"-->
+<!--          header-align="center"-->
+<!--          align="center"-->
+<!--          label="创建时间">-->
+<!--      </el-table-column>-->
       <el-table-column
           prop="orderType"
           header-align="center"
@@ -196,8 +172,8 @@
           width="150"
           label="操作">
         <template  #default="scope">
-          <el-button type="text" size="small" @click="confirmHandle(scope.row.id, scope.row.type)">完成</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.id, scope.row.type)">删除</el-button>
+          <el-button size="small" @click="confirmHandle(scope.row.id)">完成</el-button>
+          <el-button size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -209,26 +185,19 @@
       :page-size="pageSize" background
       :total="totalPage" layout="total, sizes, prev, pager, next">
     </el-pagination>
-    <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
   </div>
 </template>
 
 <script>
-  import AddOrUpdate from '../components/area-add-or-update'
+  import AddOrUpdate from '../components/plans-add-or-update'
   import axios from "axios"
+  import {getObjFromList, plan_types} from '@/common/config'
   export default {
     data () {
       return {
-        types: [
-                {value: 'Schedule_WB_Offline', label: '下线计划'}, {value: 'Schedule_WB_Online', label: '上线计划'},
-                {value: 'Schedule_Bogie_Load', label: '上过跨车计划'}, {value: 'Schedule_Bogie_UnLoad', label: '下过跨车计划'},
-                {value: 'Schedule_Coil_Move', label: '手动倒垛计划'}, {value: 'Schedule_Coil_Move_Pub', label: '倒卷计划'},
-                {value: 'Schedule_Coil_Move2A', label: '可利用才倒垛'}, {value: 'Schedule_Cool2Hot', label: '装车倒垛计划'},
-                {value: 'Schedule_Hot2Cool', label: '定向倒垛'}, {value: 'Schedule_Roll_Back_WB', label: '步进梁推卷'},
-                {value: 'Schedule_Truck_load', label: '装车计划'}, {value: 'Schedule_Truck_Unload', label: '卸车计划'},
-                ],
-        typesMap: {},
+        planTypes: {},
+        plans: [],
         dataForm: {
           key: '',
           list: []
@@ -254,18 +223,19 @@
       AddOrUpdate
     },
     mounted() {
-      let map = {}
-      this.types.forEach(e => {
-        map[e.value] = e.label
-      })
-      this.typesMap = map
+      this.planTypes = getObjFromList(plan_types)
+      this.plans = plan_types
     },
     activated () {
       this.getDataList()
     },
     methods: {
-      typeFormatter (row, column, cellValue, index) {
-          return this.typesMap[cellValue]
+      typeFormatter (row) {
+          return this.planTypes[row.taskType]
+      },
+      formatOperator (row) {
+        let operator = this.operators[row.operator]
+        return operator ? operator + "(" + row.operator + ")" : ''
       },
       // 获取数据列表
       getDataList () {
@@ -305,21 +275,14 @@
       selectionChangeHandle (val) {
         this.dataListSelections = val
       },
-      // 新增 / 修改
-      addOrUpdateHandle (id) {
-        this.addOrUpdateVisible = true
-        this.$nextTick(() => {
-          this.$refs.addOrUpdate.init(id)
-        })
-      },
       // 删除
-      deleteHandle (id, type) {
+      deleteHandle (id) {
         this.$confirm('确定删除操作?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.post(`/plans/delete/${id}/${type}`).then(data => {
+          axios.post(`/plans/delete/${id}`).then(data => {
             if (data && data.status === 200) {
               this.getDataList()
               this.$message({
@@ -333,13 +296,13 @@
           })
         })
       },
-      confirmHandle (id, type) {
+      confirmHandle (id) {
         this.$confirm('确定手动完成操作?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.post(`/plans/confirm/${id}/${type}`).then(data => {
+          axios.post(`/plans/confirm/${id}`).then(data => {
             if (data && data.status === 200) {
               this.getDataList()
               this.$message({

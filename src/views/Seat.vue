@@ -1,6 +1,11 @@
 <template>
-  <div style="width: 100%;height: 100%">
-    <div id="myChart" style="width: 100%;height: 100%"></div>
+  <div class="seat-wrapper">
+    <div class="cross-select">
+      <el-select placeholder="请选择跨" v-model="crossId" @change="crossChange">
+        <el-option v-for="item in crossIdList" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
+    </div>
+    <div id="myChart"></div>
     <seat-edit v-if="addOrUpdateVisible" ref="addOrUpdate"></seat-edit>
   </div>
 </template>
@@ -42,7 +47,10 @@ export default {
             type: 'dashed'
           }
         },
-      }
+      },
+      crossId: '',
+      crossIdList: [{ label: "1跨", value: 1}, { label: "2跨", value: 2}, { label: "3跨", value: 3},
+                    { label: "4跨", value: 4}]
     }
   },
   watch: {
@@ -52,7 +60,6 @@ export default {
   },
   mounted() {
     this.init()
-
   },
   methods: {
     init() {
@@ -60,11 +67,10 @@ export default {
       myChart = echarts.init(document.getElementById('myChart'))
       this.resizeChart()
       this.addListener()
-      this.getChartData()
     },
-    getChartData() {
+    getChartData(crossId) {
       myChart.showLoading(this.loadOption)
-      axios.get("/seat/list").then(data => {
+      axios.get(`/seat/list/${crossId}`).then(data => {
         if (data && data.status === 200 && data.data) {
           this.renderChart(data.data)
         } else {
@@ -135,7 +141,6 @@ export default {
             areaMap.set(areaId, [[e.deviceX, e.deviceY]])
           }
         })
-        debugger
         let names = Array.from(areaMap.keys()).sort().map(e => idNameMap.get(e))
         let colorArray = getRgbColorArray(this.baseColors, names.length-1)
         // 最后一位设为灰色
@@ -147,6 +152,8 @@ export default {
         let finalSeries = this.getFinalSeries(areaMap, idNameMap, seriesData, xMax, yMax)
         let option = this.getChartOption(finalSeries, names, colorArray)
         myChart.setOption(option)
+      } else {
+        myChart.clear()
       }
       myChart.hideLoading()
     },
@@ -254,7 +261,7 @@ export default {
           let source = myChart.getOption().series[0].data
           let idList = []
           indexArr.forEach(e => {
-            idList.push(source[e][4])
+            idList.push(source[e][3])
           })
           this.addOrUpdateVisible = true
           this.$nextTick(() => {
@@ -262,7 +269,26 @@ export default {
           })
         }
       })
+    },
+    crossChange (crossId) {
+      this.getChartData(crossId)
     }
   }
 }
 </script>
+<style type="text/css">
+.seat-wrapper {
+  width: 100%;
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+}
+.cross-select {
+  position: absolute;
+  z-index: 999;
+  right: 130px;
+}
+#myChart {
+  flex: 1;
+}
+</style>

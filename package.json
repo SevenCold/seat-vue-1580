@@ -1,5 +1,5 @@
 {
-  "name": "seat-vue",
+  "name": "seat-vue-syzhk",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,8 +11,8 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "echarts": "^5.1.1",
-    "element-plus": "^1.0.2-beta.44",
-    "vue": "^3.0.0",
+    "element-plus": "^2.2.0",
+    "vue": "^3.2.33",
     "vue-axios": "^3.2.4",
     "vue-router": "^4.0.0-0"
   },

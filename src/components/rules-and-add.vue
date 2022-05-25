@@ -1,16 +1,20 @@
 <template>
   <el-dialog
-    :title="!dataForm.id ? '新增子规则' : '修改规则'"
+    :title="!dataForm.id ? '新增并列规则' : '修改并列规则'"
     :close-on-click-modal="false" width="60%"
     v-model="visible">
     <el-form :model="dataForm" inline :rules="dataRule" ref="dataForm" @keyup.enter="dataFormSubmit()">
-      <el-form-item label="父规则ID" prop="parentId"  label-width="150px">
-        <el-input v-model="dataForm.parentId" placeholder="最上层规则id为0" :disabled="disableParentId"></el-input>
+      <el-form-item label="规则类型" prop="ruleType" label-width="120px" class="cus-select">
+        <el-select v-model="dataForm.ruleType" @change="typeChange" placeholder="规则类型">
+          <el-option
+              v-for="(item, key) in types"
+              :key="key"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
-      <el-form-item label="规则名称" prop="name"  label-width="150px">
-        <el-input v-model="dataForm.name" placeholder="规则名称"></el-input>
-      </el-form-item>
-      <el-form-item label="钢卷属性" prop="prop"  label-width="150px" class="cus-select">
+      <el-form-item label="钢卷属性" prop="prop"  label-width="120px" class="cus-select">
         <el-select v-model="dataForm.prop" placeholder="请选择钢卷属性">
           <el-option
               v-for="(item, key) in props"
@@ -22,7 +26,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="比较符号" prop="operator" label-width="150px" class="cus-select">
+      <el-form-item label="比较符号" prop="operator" label-width="120px" class="cus-select">
         <el-select v-model="dataForm.operator" placeholder="比较符号">
           <el-option
               v-for="(item, key) in operators"
@@ -34,17 +38,8 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="具体值" prop="value"  label-width="150px">
+      <el-form-item label="具体值" prop="value"  label-width="120px">
         <el-input v-model="dataForm.value" placeholder="多个以、分割"></el-input>
-      </el-form-item>
-      <el-form-item label="排序序号" prop="rank"  label-width="150px">
-        <el-input v-model="dataForm.rank" placeholder="排序序号"></el-input>
-      </el-form-item>
-        <el-form-item label="是否可回退" prop="canBack"  label-width="150px">
-          <el-switch v-model.number="dataForm.canBack" :active-value="1" :inactive-value="0"> </el-switch>
-        </el-form-item>
-      <el-form-item label="是否默认规则" prop="isDefault"  label-width="150px">
-        <el-switch v-model.number="dataForm.isDefault" :active-value="1" :inactive-value="0"> </el-switch>
       </el-form-item>
     </el-form>
     <template #footer class="dialog-footer">
@@ -56,49 +51,30 @@
 
 <script>
 import axios from "axios"
-import {rule_operators, rule_props} from '@/common/config'
+import {rule_operators, rule_types, rule_props} from '@/common/config'
   export default {
     emits: ["refreshDataList"],
     data () {
       let check = (rule, value, callback) => {
-        if (this.dataForm.isDefault !== 1 && !value) {
-          return callback(new Error('不是默认规则，不能为空！'));
-        }
-        callback()
-      }
-      let checkValue = (rule, value, callback) => {
         if (!value) {
-          let isDefault = this.dataForm.isDefault === 1
-          if (!isDefault) {
-            return callback(new Error('不是默认规则，不能为空！'));
-          }
+          return callback(new Error('不能为空！'));
         }
         callback()
       }
       return {
-        disableParentId: false,
         props: [],
         operators: [],
+        types: [],
         visible: false,
         dataForm: {
           id: 0,
           parentId: '',
-          name: '',
-          ruleType: '0',
+          ruleType: '',
           prop: '',
           operator: '',
           value: '',
-          rank: '',
-          isDefault: 0,
-          canBack: 1
         },
         dataRule: {
-          parentId: [
-            { required: true, message: '父规则ID不能为空', trigger: 'blur' }
-          ],
-          name: [
-            { required: true, message: '规则名称不能为空', trigger: 'blur' }
-          ],
           prop: [
             { validator: check, trigger: 'blur'}
           ],
@@ -106,45 +82,33 @@ import {rule_operators, rule_props} from '@/common/config'
             { validator: check, trigger: 'blur'}
           ],
           value: [
-            { validator: checkValue, trigger: 'blur'}
-          ],
-          rank: [
-            { required: true, message: '排序序号不能为空', trigger: 'blur' }
+            { validator: check, trigger: 'blur'}
           ]
         }
       }
     },
     mounted() {
       this.props = rule_props;
+      this.types = rule_types.filter(e => (e.value === '2' || e.value === '3'));
       this.operators = rule_operators;
     },
     methods: {
-      typeChange() {
-        this.dataForm.value = ''
-      },
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
-              this.disableParentId = true
               axios.get(`/ruleTree/info/${this.dataForm.id}`).then((data) => {
               if (data && data.status === 200) {
                 let rule = data.data
-                console.info(rule)
                 this.dataForm.parentId = rule.parentId
-                this.dataForm.name = rule.name
                 this.dataForm.prop = rule.prop
                 this.dataForm.operator = rule.operator
                 this.dataForm.value = rule.value
-                this.dataForm.rank = rule.rank
-                this.dataForm.isDefault = rule.isDefault
-                this.dataForm.canBack = rule.canBack
+                this.dataForm.ruleType = rule.ruleType + ""
               }
             })
-          } else {
-            this.disableParentId = false
           }
         })
       },
@@ -154,25 +118,19 @@ import {rule_operators, rule_props} from '@/common/config'
           this.$refs['dataForm'].resetFields()
           this.dataForm.id = undefined
           this.dataForm.parentId = id
-          this.disableParentId = true
         })
       },
       // 表单提交
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            let value = this.dataForm.ruleType === '0' ? this.dataForm.value.trim() : this.types[this.dataForm.ruleType].tip
-            axios.post(`/ruleTree/${!this.dataForm.id ? 'save' : 'update'}`, {
+            axios.post(`/ruleTree/${!this.dataForm.id ? 'saveSide' : 'updateSide'}`, {
                 'id': this.dataForm.id || undefined,
                 'parentId': this.dataForm.parentId,
-                'name': this.dataForm.name.trim(),
                 'prop': this.dataForm.prop,
                 'operator': this.dataForm.operator,
                 'ruleType': this.dataForm.ruleType,
-                'value': value,
-                'rank': this.dataForm.rank,
-                'isDefault': this.dataForm.isDefault,
-                'canBack': this.dataForm.canBack
+                'value': this.dataForm.value
               }).then(data => {
               if (data && data.status === 200) {
                 this.visible = false
@@ -192,3 +150,9 @@ import {rule_operators, rule_props} from '@/common/config'
     }
   }
 </script>
+
+<style>
+.cus-select .el-form-item__content {
+    width: 206.4px;
+}
+</style>

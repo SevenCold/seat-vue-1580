@@ -22,7 +22,7 @@
         <el-col :span="10">鞍座管理</el-col>
         <el-col :span="12">
           <el-button type="primary" @click="showSelectDialog" :disabled="dataListSelections.length <= 0">批量加入区域</el-button>
-          <el-button type="primary" @click="deleteHandle(dataListSelections.map(e => e.areaSeatId).toString())" :disabled="dataListSelections.length <= 0">批量退出区域</el-button>
+          <el-button type="primary" @click="deleteHandle(dataListSelections.map(e => e.areaSeatId))" :disabled="dataListSelections.length <= 0">批量退出区域</el-button>
         </el-col>
       </el-row>
     </template>
@@ -59,18 +59,6 @@
           label="Y坐标">
       </el-table-column>
       <el-table-column
-          prop="deviceZ"
-          header-align="center"
-          align="center"
-          label="Z坐标">
-      </el-table-column>
-      <el-table-column
-          prop="lever"
-          header-align="center"
-          align="center"
-          label="鞍座层数">
-      </el-table-column>
-      <el-table-column
           prop="areaName"
           header-align="center"
           align="center"
@@ -91,7 +79,7 @@
           width="150"
           label="操作">
         <template #default="scope">
-          <el-button type="text" size="small" :disabled="!scope.row.areaSeatId" @click="deleteHandle(scope.row.areaSeatId)">退出区域</el-button>
+          <el-button type="text" size="small" :disabled="!scope.row.areaSeatId" @click="deleteHandle([scope.row.areaSeatId])">退出区域</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -121,11 +109,7 @@ import axios from "axios"
       init (idList) {
         this.visible = true
         this.$nextTick(() => {
-          axios.get(`/seat/getByIdList`, {
-            params: {
-              idList: idList.toString()
-            }
-          }).then((data) => {
+          axios.post(`/seat/getByIdList`, idList).then((data) => {
             if (data && data.status === 200) {
               this.dataList = data.data
               this.dataIdList = data.data.map(e => e.id)
@@ -199,9 +183,8 @@ import axios from "axios"
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.post(`/seat/removeFromArea/${ids}`).then(data => {
+          axios.post(`/seat/removeFromArea`, ids).then(data => {
             if (data && data.status === 200) {
-              debugger
               this.init(this.dataIdList)
               this.$message({
                 message: '操作成功',

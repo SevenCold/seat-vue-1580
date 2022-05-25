@@ -1,8 +1,20 @@
 <template>
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter="getDataList()">
+<!--      <el-form-item>-->
+<!--        <el-input v-model="dataForm.key" placeholder="设备名称" clearable></el-input>-->
+<!--      </el-form-item>-->
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="天车号" clearable></el-input>
+        <el-select v-model="dataForm.type" placeholder="请选择设备类别" clearable>
+          <el-option
+              v-for="(item, key) in deviceSelect"
+              :key="key"
+              :label="item.name"
+              :value="item.value">
+            <span style="float: left">{{ item.name }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -13,62 +25,86 @@
       :data="dataList"
       @cell-click="cellClick()"
       border highlight-current-row
-      v-loading="dataListLoading"
-      @selection-change="selectionChangeHandle"
+      v-loading="dataListLoading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="id"
       style="width: 100%;" :height="tableHeight">
-<!--      <el-table-column-->
-<!--        type="selection"-->
-<!--        header-align="center"-->
-<!--        align="center"-->
-<!--        min-width="50">-->
-<!--      </el-table-column>-->
       <el-table-column
-        prop="craneName"
+        prop="name"
         header-align="center"
         align="center" min-width="120"
-        label="设备号">
+        label="设备名称">
+      </el-table-column>
+      <el-table-column
+          prop="id"
+          header-align="center"
+          align="center" min-width="120"
+          label="设备ID">
+      </el-table-column>
+      <el-table-column
+          prop="type"
+          header-align="center"
+          :formatter="formatType"
+          align="center" min-width="80"
+          label="设备类别">
+      </el-table-column>
+      <el-table-column
+          prop="crossid"
+          header-align="center"
+          align="center" min-width="80"
+          label="所属跨ID">
+      </el-table-column>
+      <el-table-column
+          prop="order"
+          header-align="center"
+          align="center" min-width="80"
+          label="序号">
+      </el-table-column>
+      <el-table-column
+          prop="deviceX"
+          header-align="center"
+          align="center" min-width="80"
+          label="X坐标">
+      </el-table-column>
+      <el-table-column
+          prop="deviceY"
+          header-align="center"
+          align="center" min-width="80"
+          label="Y坐标">
       </el-table-column>
       <el-table-column
         prop="deviceXLLimit"
         header-align="center"
-        align="center" min-width="100"
-        label="x坐标下限">
+        align="center" min-width="120"
+        label="X坐标左极限">
       </el-table-column>
       <el-table-column
         prop="deviceXRLimit"
         header-align="center"
-        align="center" min-width="100"
-        label="x坐标上限">
+        align="center" min-width="120"
+        label="X坐标右极限">
+      </el-table-column>
+      <el-table-column
+          prop="deviceXLPrecedence"
+          header-align="center"
+          align="center" min-width="130"
+          label="X坐标左优先极限">
+      </el-table-column>
+      <el-table-column
+          prop="deviceXRPrecedence"
+          header-align="center"
+          align="center" min-width="130"
+          label="X坐标右优先极限">
       </el-table-column>
       <el-table-column
         prop="deviceYLLimit"
         header-align="center"
-        align="center" min-width="100"
-        label="y坐标下限">
+        align="center" min-width="120"
+        label="Y坐标下限">
       </el-table-column>
       <el-table-column
         prop="deviceYRLimit"
         header-align="center"
-        align="center" min-width="100"
-        label="y坐标上限">
-      </el-table-column>
-      <el-table-column
-        prop="deviceXLPrecedence"
-        header-align="center"
-        align="center" min-width="100"
-        label="x坐标优先下限">
-      </el-table-column>
-      <el-table-column
-        prop="deviceXRPrecedence"
-        header-align="center"
-        align="center" min-width="100"
-        label="x坐标优先上限">
-      </el-table-column>
-      <el-table-column
-        prop="crossid"
-        header-align="center"
-        align="center" min-width="80"
-        label="跨编号">
+        align="center" min-width="120"
+        label="Y标上限">
       </el-table-column>
       <el-table-column
         prop="comment"
@@ -91,23 +127,15 @@
         fixed="right"
         header-align="center"
         align="center"
-        min-width="120"
+        min-width="150"
         label="操作">
         <template #default="scope">
+          <el-button type="text" size="medium" v-if="scope.row.type === 1" @click="addChild(scope.row.id)">新增子设备</el-button>
           <el-button type="text" size="medium" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
-          <el-button type="text" size="medium" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="medium" v-if="scope.row.type !== 1" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination
-        @size-change="sizeChangeHandle"
-        @current-change="currentChangeHandle"
-        :current-page="pageIndex"
-        :page-sizes="[10, 20, 50, 100, 200]"
-        :page-size="pageSize" background
-        layout="total, sizes, prev, pager, next"
-        :total="totalPage">
-    </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
   </div>
@@ -115,19 +143,19 @@
 
 <script>
   import AddOrUpdate from './range-update'
+  import {device_types, rule_props} from '@/common/config'
   import axios from "axios"
   export default {
     data () {
       return {
         dataForm: {
-          key: ''
+          key: '',
+          type: ''
         },
+        deviceTypes: [],
+        deviceSelect: [],
         dataList: [],
-        pageIndex: 1,
-        pageSize: 10,
-        totalPage: 0,
         dataListLoading: false,
-        dataListSelections: [],
         addOrUpdateVisible: false
       }
     },
@@ -135,49 +163,54 @@
     components: {
       AddOrUpdate
     },
+    mounted() {
+      this.deviceTypes = this.getObjFromList(device_types);
+      this.deviceSelect = device_types;
+    },
     methods: {
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
         axios.get("/rule/range/list", {
           params: {
-            'page': this.pageIndex,
-            'limit': this.pageSize,
-            'key': this.dataForm.key
+            'key': this.dataForm.key,
+            'type': this.dataForm.type
           }
         }).then(data => {
           if (data && data.status === 200 && data.data) {
-            this.dataList = data.data.rows
-            this.totalPage = data.data.records
+            this.dataList = data.data.children
+            console.log(this.dataList)
           } else {
             this.dataList = []
-            this.totalPage = 0
           }
           this.dataListLoading = false
         }).catch(()=>{
           this.dataListLoading = false
         })
       },
-      // 每页数
-      sizeChangeHandle (val) {
-        this.pageSize = val
-        this.pageIndex = 1
-        this.getDataList()
+      getObjFromList(list) {
+        let obj = {}
+        list.forEach(e => {
+          obj[e.value] = e.name
+        })
+        return obj
       },
-      // 当前页
-      currentChangeHandle (val) {
-        this.pageIndex = val
-        this.getDataList()
-      },
-      // 多选
-      selectionChangeHandle (val) {
-        this.dataListSelections = val
+      formatType (row) {
+        let type = this.deviceTypes[row.type]
+        return type ? type + "(" + row.type + ")" : ''
       },
       // 新增 / 修改
       addOrUpdateHandle (id) {
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.init(id)
+        })
+      },
+      // 新增 / 修改
+      addChild (id) {
+        this.addOrUpdateVisible = true
+        this.$nextTick(() => {
+          this.$refs.addOrUpdate.initChild(id)
         })
       },
       // 删除

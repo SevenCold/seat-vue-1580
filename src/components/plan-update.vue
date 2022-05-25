@@ -19,9 +19,6 @@
     <el-form-item label="天车优先级" prop="cranePriority" label-width="120px">
       <el-input v-model.number="dataForm.cranePriority" placeholder="天车优先级"></el-input>
     </el-form-item>
-    <el-form-item label="是否自动化" prop="autoManual" label-width="120px">
-      <el-input v-model.number="dataForm.autoManual" placeholder="是否自动化"></el-input>
-    </el-form-item>
     <el-form-item label="天车状态" prop="craneStatus" label-width="120px">
       <el-input v-model.number="dataForm.craneStatus" placeholder="天车状态"></el-input>
     </el-form-item>
@@ -65,15 +62,13 @@ import axios from "axios"
           craneId: '',
           taskType: '',
           cranePriority: '',
-          autoManual: '',
           craneStatus: '',
           canedit: '',
           enable: ''
         },
         dataRule: {
           storageId: [
-            { required: true, message: '库区编号不能为空', trigger: 'blur' },
-            { validator: checkNum, trigger: 'blur'}
+            { required: true, message: '库区编号不能为空', trigger: 'blur' }
           ],
           crossId: [
             { required: true, message: '跨编号不能为空', trigger: 'blur' },
@@ -89,10 +84,6 @@ import axios from "axios"
           ],
           cranePriority: [
             { required: true, message: '天车优先级不能为空', trigger: 'blur' },
-            { validator: checkNum, trigger: 'blur'}
-          ],
-          autoManual: [
-            { required: true, message: '是否自动化不能为空', trigger: 'blur' },
             { validator: checkNum, trigger: 'blur'}
           ],
           craneStatus: [
@@ -117,7 +108,6 @@ import axios from "axios"
                 this.dataForm.craneId = crane.craneId
                 this.dataForm.taskType = crane.taskType
                 this.dataForm.cranePriority = crane.cranePriority
-                this.dataForm.autoManual = crane.autoManual
                 this.dataForm.craneStatus = crane.craneStatus
                 this.dataForm.canedit = crane.canedit
                 this.dataForm.enable = crane.enable
@@ -137,7 +127,6 @@ import axios from "axios"
                 'craneId': this.dataForm.craneId,
                 'taskType': this.dataForm.taskType,
                 'cranePriority': this.dataForm.cranePriority,
-                'autoManual': this.dataForm.autoManual,
                 'craneStatus': this.dataForm.craneStatus,
                 'canedit': this.dataForm.canedit,
                 'enable': this.dataForm.enable

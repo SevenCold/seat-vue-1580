@@ -3,14 +3,18 @@ import seat from '../views/Seat.vue'
 import rule from '../views/Rule'
 import area from '../views/Area'
 import plans from '../views/Plans'
-import ruleTree from '../views/RuleTree'
-import condition from '../views/Condition'
+import ruleTree from '../views/RuleTreewithand'
+import areaConfig from '../views/AreaConfig'
+import regionConfig from '../views/RegionConfig'
+import planCondition from '../views/PlanCondition'
+import craneConfig from '../views/CraneConfig'
+import planDetail from '../views/PlanDetail'
 
 const routes = [
   {
     path: '/',
-    name: 'area',
-    component: area
+    name: 'ruleTree',
+    component: ruleTree
   },
   {
     path: '/seat',
@@ -28,14 +32,34 @@ const routes = [
     component: plans
   },
   {
-    path: '/ruleTree',
-    name: 'ruleTree',
-    component: ruleTree
+    path: '/area',
+    name: 'area',
+    component: area
   },
   {
-    path: '/condition',
-    name: 'condition',
-    component: condition
+    path: '/areaConfig',
+    name: 'areaConfig',
+    component: areaConfig
+  },
+  {
+    path: '/regionConfig',
+    name: 'regionConfig',
+    component: regionConfig
+  },
+  {
+    path: '/planCondition',
+    name: 'planCondition',
+    component: planCondition
+  },
+  {
+    path: '/craneConfig',
+    name: 'craneConfig',
+    component: craneConfig
+  },
+  {
+    path: '/planDetail',
+    name: 'planDetail',
+    component: planDetail
   }
 ]
 

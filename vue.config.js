@@ -1,4 +1,16 @@
 module.exports = {
-  publicPath: '/seat/1580',
-  lintOnSave: false
+  publicPath: '',
+  lintOnSave: false,
+  configureWebpack:{
+    module: {
+      rules: [
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: "javascript/auto"
+        },
+      ]
+    }
+  }
+
 }

@@ -7,33 +7,13 @@
       <el-form-item label="父条件ID" prop="parentId"  label-width="120px">
         <el-input v-model="dataForm.parentId" placeholder="父条件id" :disabled="disableParentId"></el-input>
       </el-form-item>
-      <el-form-item label="条件名称" prop="name"  label-width="120px">
+      <el-form-item label="左式名称" prop="leftName"  label-width="120px">
         <el-input v-model="dataForm.name" placeholder="条件名称"></el-input>
       </el-form-item>
-      <el-form-item label="钢卷属性" prop="prop"  label-width="120px" class="prop-select">
-        <el-select v-model="dataForm.prop" placeholder="请选择钢卷属性">
-          <el-option
-              v-for="(item, key) in props"
-              :key="key"
-              :label="item.name"
-              :value="item.value">
-            <span style="float: left">{{ item.name }}</span>
-            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="比较符号" prop="operator" label-width="120px" class="prop-select">
-        <el-select v-model="dataForm.operator" placeholder="比较符号">
-          <el-option
-              v-for="(item, key) in operators"
-              :key="key"
-              :label="item.name"
-              :value="item.value">
-            <span style="float: left">{{ item.name }}</span>
-            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
-          </el-option>
-        </el-select>
-      </el-form-item>
+      <table-select label="左前置符" prop="leftProp" :model="dataForm.prop"
+                    placeholder="请选择左前置符" :list="condFront"></table-select>
+      <table-select label="操作符" prop="leftProp" :model="dataForm.operator"
+                    placeholder="请选择操作符" :list="condFront"></table-select>
       <el-form-item label="条件类型" prop="ruleType" label-width="120px" class="prop-select">
         <el-select v-model="dataForm.ruleType" @change="typeChange" placeholder="条件类型">
           <el-option
@@ -70,7 +50,8 @@
 
 <script>
 import axios from "axios"
-import {operators, types, props} from '@/common/config'
+import TableSelect from '../components/table-select'
+import {operators, types, cond_front} from '@/common/config'
   export default {
     emits: ["refreshDataList"],
     data () {
@@ -95,7 +76,7 @@ import {operators, types, props} from '@/common/config'
       }
       return {
         disableParentId: false,
-        props: [],
+        condFront: [],
         operators: [],
         types: [],
         visible: false,
@@ -133,8 +114,9 @@ import {operators, types, props} from '@/common/config'
         }
       }
     },
+    components: {TableSelect},
     mounted() {
-      this.props = props;
+      this.condFront = cond_front;
       this.types = types;
       this.operators = operators;
     },
@@ -215,7 +197,4 @@ import {operators, types, props} from '@/common/config'
 </script>
 
 <style>
-.prop-select .el-form-item__content {
-    width: 206.4px;
-}
 </style>

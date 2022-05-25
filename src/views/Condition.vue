@@ -102,6 +102,13 @@
           label="表达式比较值">
       </el-table-column>
       <el-table-column
+          prop="endOperator"
+          header-align="center"
+          align="center"
+          width="150"
+          label="逻辑连接符">
+      </el-table-column>
+      <el-table-column
           prop="rank"
           header-align="center"
           align="center"
@@ -114,7 +121,7 @@
         width="180"
         label="操作">
         <template  #default="scope">
-          <el-button type="text" size="small" @click="addChildRule(scope.row.id)">添加子条件</el-button>
+          <el-button type="text" size="small" @click="addChildCondition(scope.row.id)">添加并列条件</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button v-if="scope.row.children.length === 0" type="text" size="small" @click="deleteHandle(scope.row, scope.row.id)">删除</el-button>
         </template>
@@ -156,9 +163,9 @@
       AddOrUpdate
     },
     mounted() {
-      this.types = this.getObjFromList(types)
-      this.props = this.getObjFromList(props)
-      this.operators = this.getObjFromList(operators)
+      // this.types = this.getObjFromList(types)
+      // this.props = this.getObjFromList(props)
+      // this.operators = this.getObjFromList(operators)
     },
     activated () {
       this.getDataList()
@@ -179,6 +186,7 @@
             'key': this.dataForm.key
           }
         }).then(data => {
+          debugger
           if (data && data.status === 200 && data.data) {
             this.dataList = data.data.children
           } else {
@@ -200,7 +208,7 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      addChildRule (id) {
+      addChildCondition (id) {
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.initChild(id)
